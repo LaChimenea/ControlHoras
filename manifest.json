@@ -1,0 +1,19 @@
+{
+  "name": "Control Horas",
+  "short_name": "Control Horas",
+  "description": "La Chimenea — Control de Horas Extras",
+  "start_url": "/ControlHoras/",
+  "scope": "/ControlHoras/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5efe6",
+  "theme_color": "#c0442a",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
