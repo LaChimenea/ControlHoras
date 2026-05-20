@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#c0442a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Control Horas">
+<link rel="manifest" href="manifest.json">
+<title>La Chimenea — Control de Horas</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg:        #f5efe6;
+  --surface:   #fffdf9;
+  --surface2:  #fdf6ed;
+  --border:    #e8d9c4;
+  --border2:   #d4c0a4;
+  --ember:     #c0442a;
+  --ember-light: #d4603e;
+  --ember-dim: #e8a090;
+  --ember-bg:  #fdf0ec;
+  --gold:      #9a6c2a;
+  --gold-bg:   #fdf4e3;
+  --gold-dim:  #c8a86a;
+  --cream:     #f5efe6;
+  --text:      #2c1f0e;
+  --text2:     #5a3e22;
+  --muted:     #9a8570;
+  --green:     #2d7a4a;
+  --green-bg:  #edf7f1;
+  --red:       #b03020;
+  --red-bg:    #fdf0ee;
+  --blue:      #2a5fa0;
+  --blue-bg:   #eef3fb;
+  --r: 14px;
+}
+/* Forzar modo claro aunque el sistema esté en oscuro */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+    --bg:        #f5efe6;
+    --surface:   #fffdf9;
+    --surface2:  #fdf6ed;
+    --border:    #e8d9c4;
+    --ember:     #c0442a;
+    --ember-light: #d4603e;
+    --ember-dim: #e8a090;
+    --ember-bg:  #fdf0ec;
+    --gold:      #9a6c2a;
+    --gold-bg:   #fdf4e3;
+    --gold-dim:  #c8a86a;
+    --cream:     #f5efe6;
+    --text:      #2c1f0e;
+    --text2:     #5a3e22;
+    --muted:     #9a8570;
+    --green:     #2d7a4a;
+    --green-bg:  #edf7f1;
+    --red:       #b03020;
+    --red-bg:    #fdf0ee;
+    --blue:      #2a5fa0;
+    --blue-bg:   #eef3fb;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  font-size: 15px;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c8a870' fill-opacity='0.05'%3E%3Cpath d='M20 20.5V18H0v5h20v-2.5zM20 0H0v5h20V0z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── HEADER ── */
+.app-header {
+  background: var(--ember);
+  padding: 13px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 3px 14px rgba(100,30,10,.25);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { font-size: 24px; }
+.logo-text { font-family: 'Playfair Display', serif; font-size: 18px; color: #fff8f0; line-height: 1.1; }
+.logo-sub { font-size: 10px; color: rgba(255,240,220,.7); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.user-badge {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 12px; color: #fff8f0; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.user-dot { width: 7px; height: 7px; border-radius: 50%; background: #ffd580; }
+.btn-logout {
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+  color: #fff8f0; border-radius: 8px; padding: 6px 12px;
+  font-size: 12px; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700;
+  transition: all .2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,.28); }
+
+/* ── LOGIN ── */
+#screen-login {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 30px 20px;
+  background: linear-gradient(160deg, #3d1a08 0%, #7a3a18 50%, #b85a24 100%);
+}
+.login-card {
+  width: 100%; max-width: 380px; background: var(--surface);
+  border-radius: 22px; padding: 36px 32px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.35);
+}
+.login-title { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--ember); text-align: center; margin-bottom: 4px; }
+.login-sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 28px; font-weight: 600; }
+.field-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; font-weight: 800; display: block; }
+.field-select, .field-input {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text); padding: 12px 14px;
+  font-size: 15px; font-family: 'Nunito', sans-serif; font-weight: 600;
+  margin-bottom: 16px; outline: none; transition: border-color .2s; -webkit-appearance: none;
+}
+.field-select:focus, .field-input:focus { border-color: var(--ember); }
+.btn-primary {
+  width: 100%; background: var(--ember); border: none; border-radius: 12px;
+  color: white; font-size: 15px; font-weight: 800; font-family: 'Nunito', sans-serif;
+  padding: 14px; cursor: pointer; transition: all .2s; margin-top: 4px;
+  box-shadow: 0 4px 16px rgba(192,68,42,.4);
+}
+.btn-primary:hover { background: var(--ember-light); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.login-error { color: var(--red); font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; font-weight: 600; }
+
+/* ── MAIN APP ── */
+#screen-app { display: none; }
+.app-body { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 4px; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: 14px; padding: 4px;
+  margin-bottom: 16px; box-shadow: 0 2px 8px rgba(100,60,20,.08);
+}
+.tab {
+  flex: 1; background: none; border: none; color: var(--muted);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  padding: 9px 6px; border-radius: 10px; cursor: pointer; transition: all .2s; text-align: center;
+}
+.tab.active { background: var(--ember); color: white; box-shadow: 0 2px 10px rgba(192,68,42,.3); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 18px; margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(100,60,20,.07);
+}
+.card-title {
+  font-family: 'Playfair Display', serif; font-size: 17px; color: var(--ember);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  padding-bottom: 10px; border-bottom: 1.5px solid var(--border);
+}
+
+/* ── TURNO SELECTOR ── */
+.turno-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.turno-btn {
+  background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px 8px; color: var(--muted);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .2s; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.turno-btn .turno-icon { font-size: 24px; }
+.turno-btn.selected { border-color: var(--ember); color: var(--ember); background: var(--ember-bg); }
+
+/* ── EMPLEADA ROWS ── */
+.empleada-row {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 13px 14px; margin-bottom: 9px;
+}
+.empleada-row.encargada { border-left: 4px solid var(--gold-dim); background: var(--gold-bg); }
+.empleada-name {
+  font-weight: 800; font-size: 14px; color: var(--text);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 7px;
+}
+.badge-enc {
+  background: #fff3d6; color: var(--gold); border: 1px solid var(--gold-dim);
+  font-size: 9px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 5px;
+}
+.horas-inputs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sign-toggle { display: flex; gap: 4px; }
+.sign-btn {
+  width: 36px; height: 36px; border-radius: 9px; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--muted); font-size: 20px; font-weight: 800;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; font-family: 'Nunito', sans-serif;
+}
+.sign-btn.pos.active { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.sign-btn.neg.active { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.time-input-wrap { display: flex; align-items: center; gap: 5px; }
+.time-num {
+  width: 52px; height: 36px; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 9px; color: var(--text); text-align: center; font-size: 15px; font-weight: 700;
+  font-family: 'Nunito', sans-serif; outline: none; transition: border-color .2s;
+}
+.time-num:focus { border-color: var(--ember); }
+.time-sep { color: var(--muted); font-size: 14px; font-weight: 800; }
+.consumo-wrap { margin-top: 9px; display: flex; gap: 8px; align-items: center; }
+.consumo-input {
+  flex: 1; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 9px; color: var(--text); padding: 7px 10px; font-size: 13px;
+  font-family: 'Nunito', sans-serif; font-weight: 600; outline: none; transition: border-color .2s;
+}
+.consumo-input:focus { border-color: var(--gold-dim); }
+.consumo-label { font-size: 11px; color: var(--muted); white-space: nowrap; font-weight: 700; }
+
+/* ── GUARDAR BTN ── */
+.btn-save {
+  width: 100%; background: var(--ember); border: none; border-radius: 14px;
+  color: white; font-size: 16px; font-weight: 800; font-family: 'Nunito', sans-serif;
+  padding: 16px; cursor: pointer; transition: all .2s; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 18px rgba(192,68,42,.38);
+}
+.btn-save:hover { background: var(--ember-light); transform: translateY(-1px); }
+.btn-save:disabled { background: var(--ember-dim); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--text); color: #fff8f0; padding: 12px 24px; border-radius: 30px;
+  font-weight: 700; font-size: 14px; transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── HISTORIAL ── */
+.historial-entry {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; margin-bottom: 12px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(100,60,20,.08);
+}
+.h-delete {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 15px; padding: 3px 7px; border-radius: 6px; transition: all .15s;
+}
+.h-delete:hover { color: var(--red); background: var(--red-bg); }
+
+/* ── RESUMEN ── */
+.resumen-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px; border-radius: 12px; margin-bottom: 8px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+}
+.resumen-row.encargada { border-left: 4px solid var(--gold-dim); background: var(--gold-bg); }
+.resumen-name { font-weight: 800; font-size: 14px; color: var(--text); }
+.resumen-horas { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+.resumen-acuerdo { font-size: 11px; color: var(--gold); font-weight: 700; }
+.resumen-consumo { font-size: 11px; color: var(--red); font-weight: 700; }
+.resumen-total { font-size: 17px; font-weight: 800; }
+.resumen-total.pos { color: var(--green); }
+.resumen-total.neg { color: var(--red); }
+.resumen-total.zero { color: var(--muted); }
+
+.empty-state { text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px; font-weight: 600; }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+.section-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; font-weight: 800; }
+.divider { border: none; border-top: 1.5px solid var(--border); margin: 16px 0; }
+
+#edit-banner {
+  background: var(--blue-bg); border: 1.5px solid var(--blue);
+  border-radius: 12px; padding: 10px 14px; margin-bottom: 12px;
+  font-size: 13px; color: var(--blue); font-weight: 700;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+@media (max-width: 400px) {
+  .horas-inputs { gap: 6px; }
+  .time-num { width: 46px; }
+}
+
+/* ── HISTORIAL COLAPSABLE ── */
+.mes-group { margin-bottom: 10px; }
+.mes-header {
+  font-family: 'Playfair Display', serif; font-size: 15px; color: var(--ember);
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; user-select: none;
+  text-transform: capitalize;
+  box-shadow: 0 2px 8px rgba(100,60,20,.07);
+}
+.mes-header:hover { background: var(--ember-bg); border-color: var(--ember-dim); }
+.mes-arrow { font-size: 12px; color: var(--muted); transition: transform .2s; }
+.mes-arrow.open { transform: rotate(90deg); }
+.mes-body { display: none; padding: 8px 0 0 0; }
+.mes-body.open { display: block; }
+
+.semana-group { margin-bottom: 8px; }
+.semana-header {
+  font-size: 12px; font-weight: 800; color: var(--text2);
+  padding: 9px 12px; border-radius: 9px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; user-select: none;
+}
+.semana-header:hover { background: var(--gold-bg); border-color: var(--gold-dim); }
+.semana-arrow { font-size: 11px; color: var(--muted); transition: transform .2s; }
+.semana-arrow.open { transform: rotate(90deg); }
+.semana-body { display: none; padding: 6px 0 0 0; }
+.semana-body.open { display: block; }
+
+/* ── CHECKBOXES X ── */
+.x-checks { display: flex; gap: 5px; align-items: center; }
+.x-box {
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  cursor: pointer; font-size: 16px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  color: transparent; transition: all .15s; flex-shrink: 0;
+}
+.x-box.checked { background: var(--ember-bg); border-color: var(--ember); color: var(--ember); }
+
+/* ── DETALLE EMPLEADA RESUMEN ── */
+.detalle-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 200; display: flex; align-items: flex-end;
+  animation: fadeIn .2s;
+}
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+.detalle-sheet {
+  background: var(--surface); border-radius: 22px 22px 0 0;
+  width: 100%; max-height: 85vh; overflow-y: auto;
+  padding: 20px 18px 32px; box-shadow: 0 -8px 40px rgba(0,0,0,.25);
+  animation: slideUp .25s cubic-bezier(.34,1.2,.64,1);
+}
+@keyframes slideUp { from { transform:translateY(100%) } to { transform:translateY(0) } }
+.detalle-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--border);
+}
+.detalle-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ember); }
+.detalle-close {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; width: 32px; height: 32px; cursor: pointer;
+  font-size: 18px; color: var(--muted); display: flex; align-items: center; justify-content: center;
+}
+.detalle-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;
+}
+.detalle-stat {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 8px; text-align: center;
+}
+.detalle-stat-val { font-size: 15px; font-weight: 800; color: var(--text); }
+.detalle-stat-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing:.05em; margin-top: 2px; }
+.detalle-turno-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 10px; border-radius: 9px; margin-bottom: 5px;
+  background: var(--surface2); border: 1px solid var(--border); font-size: 13px;
+}
+.detalle-turno-fecha { color: var(--muted); font-size: 11px; font-weight: 700; }
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login">
+  <div class="login-card">
+    <div style="text-align:center;font-size:40px;margin-bottom:12px">🔥</div>
+    <div class="login-title">La Chimenea</div>
+    <div class="login-sub">Control de Horas · Acceso administrador</div>
+    <hr class="divider">
+    <div class="field-label">Usuario</div>
+    <select class="field-select" id="login-user">
+      <option value="">— Selecciona —</option>
+      <option value="admin">Admin (Propietario)</option>
+    </select>
+    <div class="field-label">Contraseña</div>
+    <input class="field-input" type="password" id="login-pass" placeholder="••••••" />
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="screen-app">
+  <div class="app-header">
+    <div class="logo">
+      <span class="logo-icon">🔥</span>
+      <div>
+        <div class="logo-text">La Chimenea</div>
+        <div class="logo-sub">Control de Horas</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-dot"></div>
+        <span id="header-user">—</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="tabs" id="main-tabs">
+      <button class="tab active" onclick="switchTab('registro')">📝 Registrar</button>
+      <button class="tab" onclick="switchTab('historial')">📋 Historial</button>
+      <button class="tab" id="tab-btn-resumen" onclick="switchTab('resumen')">📊 Resumen</button>
+    </div>
+
+    <!-- TAB: REGISTRO -->
+    <div class="tab-panel active" id="tab-registro">
+      <div class="card">
+        <div class="card-title">📅 Fecha y Turno</div>
+        <div class="field-label">Fecha</div>
+        <input class="field-input" type="date" id="reg-fecha" style="margin-bottom:14px">
+        <div class="field-label">Turno</div>
+        <div class="turno-grid">
+          <button class="turno-btn selected" id="btn-am" onclick="selectTurno('am')">
+            <span class="turno-icon">☀️</span><span>Mañana</span>
+          </button>
+          <button class="turno-btn" id="btn-pm" onclick="selectTurno('pm')">
+            <span class="turno-icon">🌙</span><span>Noche</span>
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 Empleadas</div>
+        <div class="section-label">Horas extra (+) o defecto (−) · Consumos</div>
+        <div id="empleadas-list"></div>
+      </div>
+      <button class="btn-save" onclick="guardarRegistro()">💾 Guardar Turno</button>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div class="tab-panel" id="tab-historial">
+      <div class="card">
+        <div class="card-title">📋 Historial de Turnos</div>
+        <div id="historial-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB: RESUMEN -->
+    <div class="tab-panel" id="tab-resumen">
+      <div class="card">
+        <div class="card-title">📊 Resumen Mensual</div>
+        <div class="field-label">Mes</div>
+        <input class="field-input" type="month" id="mes-selector" style="margin-bottom:14px">
+        <div id="resumen-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Turno guardado</div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────
+const USERS = {
+  admin:  { name: 'Admin',  pass: 'admin2024',  role: 'admin' },
+};
+
+const EMPLEADAS = [
+  { id: 'maria_p',    name: 'Maria P.',     encargada: false },
+  { id: 'mery',       name: 'Mery',         encargada: true  },
+  { id: 'leo',        name: 'Leo',          encargada: true  },
+  { id: 'nataly',     name: 'Nataly',       encargada: false },
+  { id: 'janire',     name: 'Janire',       encargada: false },
+  { id: 'debora',     name: 'Debora',       encargada: true  },
+  { id: 'maria_gar',  name: 'Maria Gar.',   encargada: false },
+  { id: 'kirsy',      name: 'Kirsy',        encargada: false },
+  { id: 'marisa',     name: 'Marisa',       encargada: false },
+  { id: 'mavel',      name: 'Mavel',        encargada: false },
+  { id: 'keila',      name: 'Keila',        encargada: false },
+  { id: 'eva',        name: 'Eva',          encargada: false },
+  { id: 'ariana',     name: 'Ariana',       encargada: false },
+];
+
+const ACUERDOS = { mery: 300, leo: 340, debora: 300 };
+const PRECIO_ENC  = 9.50;
+const PRECIO_REST = 8.50;
+
+let currentUser = null;
+let turnoActual = 'am';
+let editandoId = null; // ID del registro que se está editando
+
+// ── FIREBASE ──────────────────────────────────────────────────────────────
+const DB_URL  = 'https://reservas-la-chimenea-default-rtdb.europe-west1.firebasedatabase.app';
+const DB_KEY  = 'AIzaSyCRdNcZ7E8Mp9IgtjbB3rP1bc7st7JW5vo';
+
+let _registros = null;
+let _cargado   = false;
+
+async function loadRegistros() {
+  if (_cargado && _registros !== null) return [..._registros];
+  try {
+    const res  = await fetch(`${DB_URL}/control_horas/registros.json?auth=${DB_KEY}`);
+    const data = await res.json();
+    _registros = data ? Object.values(data) : [];
+    _cargado   = true;
+  } catch(e) {
+    console.error('Firebase load error:', e);
+    if (_registros === null) _registros = [];
+    _cargado = true;
+  }
+  return [..._registros];
+}
+
+async function saveRegistros(arr) {
+  _registros = arr;
+  try {
+    const obj = {};
+    arr.forEach(r => { obj[r.id] = r; });
+    await fetch(`${DB_URL}/control_horas/registros.json?auth=${DB_KEY}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(obj)
+    });
+  } catch(e) {
+    console.error('Firebase save error:', e);
+  }
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogin() {
+  const uid  = document.getElementById('login-user').value;
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-error');
+  if (!uid) { err.textContent = 'Selecciona un usuario'; return; }
+  const u = USERS[uid];
+  if (!u || pass !== u.pass) { err.textContent = 'Contraseña incorrecta'; return; }
+  err.textContent = '';
+  currentUser = { id: uid, ...u };
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-app').style.display = 'block';
+  document.getElementById('header-user').textContent =
+    u.role === 'admin' ? `${u.name} ★` : u.name;
+  // Ocultar pestaña resumen a encargadas
+  document.getElementById('tab-btn-resumen').style.display =
+    u.role === 'admin' ? '' : 'none';
+  initApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  _cargado   = false;  // forzar recarga desde Firebase al volver a entrar
+  _registros = null;
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('screen-app').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-user').value = '';
+}
+
+// ── REPARAR DATOS CORRUPTOS ───────────────────────────────────────────────
+// Recalcula totalMin desde horas+minutos+signo guardados, por si hay corrupcion previa
+async function repararRegistros() {
+  const arr = await loadRegistros();
+  let cambiados = 0;
+  arr.forEach(reg => {
+    if (!reg.empleadas) return;
+    EMPLEADAS.forEach(emp => {
+      const d = reg.empleadas[emp.id];
+      if (!d) return;
+      const hVal = parseInt(d.horas)   || 0;
+      const mVal = parseInt(d.minutos) || 0;
+      const sign = (d.signo === -1 || d.signo === '-1') ? -1 : 1;
+      const correcto = (hVal * 60 + mVal) * sign;
+      if (d.totalMin !== correcto) {
+        d.totalMin = correcto;
+        cambiados++;
+      }
+    });
+  });
+  if (cambiados > 0) {
+    await saveRegistros(arr);
+    _registros = arr;
+    _cargado = true;
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+async function initApp() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('reg-fecha').value = today;
+  document.getElementById('mes-selector').value = today.slice(0,7);
+  buildEmpleadasList();
+  await repararRegistros();
+  renderHistorial();
+  renderResumen();
+}
+
+// ── TURNO ─────────────────────────────────────────────────────────────────
+function selectTurno(t) {
+  turnoActual = t;
+  document.getElementById('btn-am').classList.toggle('selected', t === 'am');
+  document.getElementById('btn-pm').classList.toggle('selected', t === 'pm');
+  refreshXChecks();
+}
+
+// ── EMPLEADAS LIST ────────────────────────────────────────────────────────
+// X checks storage key
+function xCheckKey(empId, fecha, turno) { return `xcheck_${empId}_${fecha}_${turno}`; }
+
+function buildEmpleadasList() {
+  const container = document.getElementById('empleadas-list');
+  container.innerHTML = '';
+  const isAdmin = currentUser?.role === 'admin';
+  EMPLEADAS.forEach(emp => {
+    const div = document.createElement('div');
+    div.className = 'empleada-row' + (emp.encargada ? ' encargada' : '');
+    div.innerHTML = `
+      <div class="empleada-name" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:7px">
+          ${emp.name}
+          ${emp.encargada ? '<span class="badge-enc">Encargada</span>' : ''}
+        </div>
+        ${isAdmin ? `<div class="x-checks" id="xc-${emp.id}">
+          <div class="x-box" onclick="toggleX('${emp.id}',0)" id="xb-${emp.id}-0"></div>
+          <div class="x-box" onclick="toggleX('${emp.id}',1)" id="xb-${emp.id}-1"></div>
+          <div class="x-box" onclick="toggleX('${emp.id}',2)" id="xb-${emp.id}-2"></div>
+          <div class="x-box" onclick="toggleX('${emp.id}',3)" id="xb-${emp.id}-3"></div>
+        </div>` : ''}
+      </div>
+      <div class="horas-inputs">
+        <div class="sign-toggle">
+          <button class="sign-btn pos active" id="sign-pos-${emp.id}" onclick="setSign('${emp.id}','pos')">+</button>
+          <button class="sign-btn neg" id="sign-neg-${emp.id}" onclick="setSign('${emp.id}','neg')">−</button>
+        </div>
+        <div class="time-input-wrap">
+          <input class="time-num" type="number" min="0" max="23" placeholder="0" id="h-${emp.id}" value="">
+          <span class="time-sep">h</span>
+          <input class="time-num" type="number" min="0" max="59" placeholder="00" id="m-${emp.id}" value="">
+          <span class="time-sep">min</span>
+        </div>
+      </div>
+      <div class="consumo-wrap">
+        <span class="consumo-label">Consumo/descuento:</span>
+        <input class="consumo-input" type="text" placeholder="ej: cena 12€, botella…" id="c-${emp.id}">
+        <input class="time-num" type="number" min="0" placeholder="€" id="ce-${emp.id}" style="width:52px">
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// X checks — guardadas en Firebase bajo /control_horas/xchecks/{fecha}_{turno}/{empId}
+async function toggleX(empId, idx) {
+  const fecha = document.getElementById('reg-fecha').value || 'nodate';
+  const turno = turnoActual;
+  const path = `${DB_URL}/control_horas/xchecks/${fecha}_${turno}/${empId}.json?auth=${DB_KEY}`;
+  let val = 0;
+  try {
+    const res = await fetch(path);
+    val = (await res.json()) || 0;
+  } catch(e) {}
+  val = (val === idx + 1) ? idx : idx + 1;
+  try { await fetch(path, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(val) }); } catch(e) {}
+  renderXBoxes(empId, val);
+}
+
+function renderXBoxes(empId, val) {
+  for (let i = 0; i < 4; i++) {
+    const box = document.getElementById(`xb-${empId}-${i}`);
+    if (!box) continue;
+    box.classList.toggle('checked', i < val);
+    box.textContent = i < val ? '✕' : '';
+  }
+}
+
+async function refreshXChecks() {
+  if (currentUser?.role !== 'admin') return;
+  const fecha = document.getElementById('reg-fecha').value || 'nodate';
+  const turno = turnoActual;
+  try {
+    const res = await fetch(`${DB_URL}/control_horas/xchecks/${fecha}_${turno}.json?auth=${DB_KEY}`);
+    const data = (await res.json()) || {};
+    EMPLEADAS.forEach(emp => renderXBoxes(emp.id, data[emp.id] || 0));
+  } catch(e) {
+    EMPLEADAS.forEach(emp => renderXBoxes(emp.id, 0));
+  }
+}
+
+// Cargar X checks en historial para mostrarlas (solo admin)
+async function loadXChecksForTurno(fecha, turno) {
+  try {
+    const res = await fetch(`${DB_URL}/control_horas/xchecks/${fecha}_${turno}.json?auth=${DB_KEY}`);
+    return (await res.json()) || {};
+  } catch(e) { return {}; }
+}
+
+function setSign(id, sign) {
+  document.getElementById(`sign-pos-${id}`).classList.toggle('active', sign === 'pos');
+  document.getElementById(`sign-neg-${id}`).classList.toggle('active', sign === 'neg');
+}
+
+function getSign(id) {
+  return document.getElementById(`sign-pos-${id}`).classList.contains('active') ? 1 : -1;
+}
+
+// ── GUARDAR ───────────────────────────────────────────────────────────────
+async function guardarRegistro() {
+  const fecha = document.getElementById('reg-fecha').value;
+  if (!fecha) { alert('Selecciona una fecha'); return; }
+
+  const btn = document.querySelector('.btn-save');
+
+  // Validar: si hay texto de consumo debe tener importe
+  let errorConsumo = null;
+  EMPLEADAS.forEach(emp => {
+    const texto = document.getElementById(`c-${emp.id}`).value.trim();
+    const euros = parseFloat(document.getElementById(`ce-${emp.id}`).value) || 0;
+    if (texto && euros === 0 && !errorConsumo) errorConsumo = emp.name;
+  });
+  if (errorConsumo) {
+    showToast(`⚠️ Falta el importe del consumo de ${errorConsumo}`);
+    return;
+  }
+
+  btn.disabled = true;
+
+  const empleadasData = {};
+  EMPLEADAS.forEach(emp => {
+    const hVal = parseInt(document.getElementById(`h-${emp.id}`).value) || 0;
+    const mVal = parseInt(document.getElementById(`m-${emp.id}`).value) || 0;
+    const sign = getSign(emp.id);
+    const totalMin = (hVal * 60 + mVal) * sign;
+    const consumoText = document.getElementById(`c-${emp.id}`).value.trim();
+    // consumoEur siempre positivo — se resta en el cálculo
+    const consumoEur = Math.abs(parseFloat(document.getElementById(`ce-${emp.id}`).value) || 0);
+    empleadasData[emp.id] = { horas: hVal, minutos: mVal, signo: sign, totalMin, consumoText, consumoEur };
+  });
+
+  const arr = await loadRegistros();
+
+  if (editandoId !== null) {
+    // Modo edición — actualizar el registro existente
+    const idx = arr.findIndex(r => r.id === editandoId);
+    if (idx !== -1) {
+      arr[idx] = {
+        ...arr[idx],
+        fecha,
+        turno: turnoActual,
+        empleadas: empleadasData,
+        editadoPor: currentUser.name,
+        editadoTs: new Date().toISOString(),
+      };
+    }
+    editandoId = null;
+    document.querySelector('.btn-save').innerHTML = '💾 Guardar Turno';
+    document.getElementById('edit-banner')?.remove();
+  } else {
+    // Bloquear duplicados: comprobar si ya existe un registro para esta fecha y turno
+    const existente = arr.find(r => r.fecha === fecha && r.turno === turnoActual);
+    if (existente) {
+      const turnoStr = turnoActual === 'am' ? 'mañana' : 'noche';
+      const [fy, fmo, fd] = fecha.split('-');
+      showToast(`⚠️ Ya existe el turno de ${turnoStr} del ${fd}/${fmo}/${fy}. Usa ✏️ en el historial para editarlo.`);
+      btn.disabled = false;
+      return;
+    }
+    // Nuevo registro
+    const registro = {
+      id: Date.now(),
+      fecha,
+      turno: turnoActual,
+      encargada: currentUser.name,
+      encargadaId: currentUser.id,
+      empleadas: empleadasData,
+      ts: new Date().toISOString(),
+    };
+    arr.push(registro);
+  }
+
+  try {
+    await saveRegistros(arr);
+    _registros = arr;
+    buildEmpleadasList();
+    showToast('✓ Turno guardado correctamente');
+    await renderHistorial();
+    await renderResumen();
+  } catch(e) {
+    showToast('⚠️ Error al guardar, inténtalo de nuevo');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── HISTORIAL ─────────────────────────────────────────────────────────────
+async function renderTurnoCard(fecha, turno, reg, container, isAdmin) {
+  const canEdit   = currentUser?.role === 'admin' || currentUser?.role === 'encargada';
+  const canDelete = currentUser?.role === 'admin' || currentUser?.role === 'encargada';
+  const [y, mo, d] = fecha.split('-');
+  const fechaObj = new Date(y, mo-1, d);
+  const diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const diaSemana = diasSemana[fechaObj.getDay()];
+  const fechaStr = `${d}/${mo}`;
+
+  // Cargar X checks de Firebase si es admin
+  let xData = {};
+  if (isAdmin) {
+    try {
+      const res = await fetch(`${DB_URL}/control_horas/xchecks/${fecha}_${turno}.json?auth=${DB_KEY}`);
+      xData = (await res.json()) || {};
+    } catch(e) {}
+  }
+
+  const card = document.createElement('div');
+  card.className = 'historial-entry';
+  card.style.cssText = 'padding:0;overflow:hidden;margin-bottom:8px';
+
+  const turnoHdr = document.createElement('div');
+  turnoHdr.style.cssText = `padding:8px 14px;background:${turno==='am'?'#1e1a0e':'#0e1520'};display:flex;justify-content:space-between;align-items:center`;
+  turnoHdr.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-weight:700;font-size:13px;color:var(--muted)">${diaSemana} ${fechaStr}</span>
+      <span style="font-size:13px;font-weight:700;color:${turno==='am'?'var(--gold)':'var(--blue)'}">
+        ${turno==='am'?'☀️ Mañana':'🌙 Noche'}
+      </span>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center">
+      <span style="font-size:11px;color:var(--muted)">por ${reg.encargada}</span>
+      ${canEdit   ? `<button class="h-delete" style="color:var(--blue);font-size:13px" onclick="editarRegistro(${reg.id})">✏️</button>` : ''}
+      ${canDelete ? `<button class="h-delete" style="font-size:13px" onclick="eliminarRegistro(${reg.id})">🗑</button>` : ''}
+    </div>
+  `;
+  card.appendChild(turnoHdr);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.style.cssText = 'padding:8px 14px';
+  const filas = EMPLEADAS.map(emp => {
+    const dat = reg.empleadas[emp.id];
+    if (!dat || (dat.totalMin === 0 && !dat.consumoText)) return null;
+    return { emp, dat };
+  }).filter(Boolean);
+
+  if (!filas.length) {
+    tableWrap.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:4px 0">Sin variaciones este turno</div>';
+  } else {
+    const table = document.createElement('table');
+    table.style.cssText = 'width:100%;border-collapse:collapse;font-size:13px';
+    filas.forEach(({emp, dat}, i) => {
+      const absMin = Math.abs(dat.totalMin);
+      const h   = Math.floor(absMin / 60);
+      const m   = absMin % 60;
+      const sign = dat.totalMin > 0 ? '+' : dat.totalMin < 0 ? '−' : '';
+      const color = dat.totalMin > 0 ? 'var(--green)' : dat.totalMin < 0 ? 'var(--red)' : 'var(--muted)';
+      const horasStr = dat.totalMin !== 0
+        ? `${sign}${h > 0 ? h+'h ' : ''}${m > 0 ? m+'min' : ''}`
+        : '—';
+      const bg = i % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.03)';
+
+      // X checks en historial (solo admin)
+      const xVal = isAdmin ? (xData[emp.id] || 0) : 0;
+      const xHtml = isAdmin ? `<td style="padding:5px 6px;text-align:right;width:20%">
+        ${[0,1,2,3].map(i => `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid ${i < xVal ? 'var(--ember)' : 'var(--border)'};background:${i < xVal ? 'var(--ember-bg)' : 'transparent'};font-size:10px;font-weight:800;color:${i < xVal ? 'var(--ember)' : 'transparent'};text-align:center;line-height:14px;margin-left:2px">${i < xVal ? '✕' : ''}</span>`).join('')}
+      </td>` : '<td></td>';
+
+      const tr = document.createElement('tr');
+      tr.style.background = bg;
+      tr.innerHTML = `
+        <td style="padding:5px 6px;font-weight:${emp.encargada?'700':'500'};color:${emp.encargada?'var(--gold)':'var(--text2)'};width:38%">${emp.name}</td>
+        <td style="padding:5px 6px;font-weight:700;color:${color};text-align:right;width:22%">${horasStr}</td>
+        <td style="padding:5px 6px;color:#eb5757;font-size:12px;text-align:right;width:20%">
+          ${dat.consumoText ? `−${dat.consumoEur ? dat.consumoEur+'€' : ''} ${dat.consumoText}` : ''}
+        </td>
+        ${xHtml}
+      `;
+      table.appendChild(tr);
+    });
+    tableWrap.appendChild(table);
+  }
+  if (reg.editadoPor) {
+    const editNote = document.createElement('div');
+    editNote.style.cssText = 'font-size:10px;color:var(--muted);margin-top:4px';
+    editNote.textContent = `Editado por ${reg.editadoPor}`;
+    tableWrap.appendChild(editNote);
+  }
+  card.appendChild(tableWrap);
+  container.appendChild(card);
+}
+
+// Número de semana ISO (lunes = inicio de semana)
+function isoWeek(dateStr) {
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, mo-1, d);
+  // Jueves de la semana actual marca el año ISO
+  const thu = new Date(date);
+  thu.setDate(date.getDate() - ((date.getDay() + 6) % 7) + 3);
+  const yearStart = new Date(thu.getFullYear(), 0, 1);
+  const wk = Math.ceil(((thu - yearStart) / 86400000 + 1) / 7);
+  return { wk, isoYear: thu.getFullYear() };
+}
+
+function isoWeekMondaySunday(isoYear, wk) {
+  // Encuentra el lunes de la semana ISO wk del año isoYear
+  const jan4 = new Date(isoYear, 0, 4); // 4 enero siempre en semana 1
+  const monday = new Date(jan4);
+  monday.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (wk - 1) * 7);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  return `${fmt(monday)} – ${fmt(sunday)}`;
+}
+
+async function renderHistorial() {
+  const arr = await loadRegistros();
+  const container = document.getElementById('historial-list');
+  container.innerHTML = '';
+  if (!arr.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Aún no hay registros</div>';
+    return;
+  }
+
+  const isAdmin = currentUser?.role === 'admin';
+
+  // Agrupar por fecha
+  const porFecha = {};
+  arr.forEach(reg => {
+    if (!porFecha[reg.fecha]) porFecha[reg.fecha] = {};
+    porFecha[reg.fecha][reg.turno] = reg;
+  });
+
+  // Agrupar por mes
+  const porMes = {};
+  Object.keys(porFecha).forEach(fecha => {
+    const mes = fecha.slice(0, 7);
+    if (!porMes[mes]) porMes[mes] = [];
+    if (!porMes[mes].includes(fecha)) porMes[mes].push(fecha);
+  });
+
+  const meses = Object.keys(porMes).sort((a,b) => b.localeCompare(a));
+  // Abrir solo el mes más reciente por defecto
+  const mesReciente = meses[0];
+
+  meses.forEach((mes, mesIdx) => {
+    const [y, mo] = mes.split('-');
+    const mesLabel = new Date(parseInt(y), parseInt(mo)-1).toLocaleString('es-ES', {month:'long', year:'numeric'});
+
+    const mesDiv = document.createElement('div');
+    mesDiv.className = 'mes-group';
+
+    // Contar turnos del mes
+    const totalTurnos = porMes[mes].reduce((acc, f) => acc + Object.keys(porFecha[f]).length, 0);
+
+    const mesHdr = document.createElement('div');
+    mesHdr.className = 'mes-header';
+    const isOpenMes = mesIdx === 0;
+    mesHdr.innerHTML = `
+      <span>📅 ${mesLabel} <span style="font-size:11px;color:var(--muted);font-weight:600">(${totalTurnos} turnos)</span></span>
+      <span class="mes-arrow ${isOpenMes ? 'open' : ''}">▶</span>
+    `;
+
+    const mesBody = document.createElement('div');
+    mesBody.className = 'mes-body' + (isOpenMes ? ' open' : '');
+
+    mesHdr.onclick = () => {
+      const open = mesBody.classList.toggle('open');
+      mesHdr.querySelector('.mes-arrow').classList.toggle('open', open);
+    };
+
+    mesDiv.appendChild(mesHdr);
+    mesDiv.appendChild(mesBody);
+
+    // Agrupar fechas por semana ISO
+    const fechasDelMes = porMes[mes];
+    const porSemana = {};
+    fechasDelMes.forEach(fecha => {
+      const { wk, isoYear } = isoWeek(fecha);
+      const key = `${isoYear}-W${String(wk).padStart(2,'0')}`;
+      if (!porSemana[key]) porSemana[key] = { wk, isoYear, fechas: [] };
+      porSemana[key].fechas.push(fecha);
+    });
+
+    const semanaKeys = Object.keys(porSemana).sort((a,b) => b.localeCompare(a));
+    // Abrir solo la semana más reciente del mes reciente
+    const semReciente = semanaKeys[0];
+
+    semanaKeys.forEach((key, semIdx) => {
+      const { wk, isoYear, fechas } = porSemana[key];
+      const rango = isoWeekMondaySunday(isoYear, wk);
+      const totalTurnosSem = fechas.reduce((acc, f) => acc + Object.keys(porFecha[f]).length, 0);
+
+      const semDiv = document.createElement('div');
+      semDiv.className = 'semana-group';
+
+      const isOpenSem = isOpenMes && semIdx === 0;
+
+      const semHdr = document.createElement('div');
+      semHdr.className = 'semana-header';
+      semHdr.innerHTML = `
+        <span>Semana ${wk} &nbsp;<span style="font-weight:600;color:var(--muted)">${rango}</span></span>
+        <span class="semana-arrow ${isOpenSem ? 'open' : ''}">▶</span>
+      `;
+
+      const semBody = document.createElement('div');
+      semBody.className = 'semana-body' + (isOpenSem ? ' open' : '');
+
+      semHdr.onclick = () => {
+        const open = semBody.classList.toggle('open');
+        semHdr.querySelector('.semana-arrow').classList.toggle('open', open);
+      };
+
+      semDiv.appendChild(semHdr);
+      semDiv.appendChild(semBody);
+
+      // Ordenar asc: lunes→domingo, mañana→noche. for...of con await para respetar orden
+      const fechasOrdenadas = fechas.slice().sort((a,b) => a.localeCompare(b));
+      (async () => {
+        for (const fecha of fechasOrdenadas) {
+          for (const turno of ['am','pm']) {
+            const reg = porFecha[fecha][turno];
+            if (!reg) continue;
+            await renderTurnoCard(fecha, turno, reg, semBody, isAdmin);
+          }
+        }
+      })();
+
+      mesBody.appendChild(semDiv);
+    });
+
+    container.appendChild(mesDiv);
+  });
+}
+
+async function eliminarRegistro(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  const arr = await loadRegistros();
+  await saveRegistros(arr.filter(r => r.id !== id));
+  renderHistorial();
+  renderResumen();
+}
+
+async function editarRegistro(id) {
+  const arr = await loadRegistros();
+  const reg = arr.find(r => r.id === id);
+  if (!reg) return;
+
+  // Cargar datos en el formulario
+  editandoId = id;
+  document.getElementById('reg-fecha').value = reg.fecha;
+  selectTurno(reg.turno);
+  buildEmpleadasList();
+
+  EMPLEADAS.forEach(emp => {
+    const d = reg.empleadas[emp.id];
+    if (!d) return;
+    const absMin = Math.abs(d.totalMin);
+    const h = Math.floor(absMin / 60);
+    const m = absMin % 60;
+    document.getElementById(`h-${emp.id}`).value = h || '';
+    document.getElementById(`m-${emp.id}`).value = m || '';
+    setSign(emp.id, d.totalMin < 0 ? 'neg' : 'pos');
+    document.getElementById(`c-${emp.id}`).value  = d.consumoText || '';
+    document.getElementById(`ce-${emp.id}`).value = d.consumoEur  || '';
+  });
+
+  // Cambiar botón y añadir banner
+  document.querySelector('.btn-save').innerHTML = '💾 Actualizar Turno';
+  document.getElementById('edit-banner')?.remove();
+  const banner = document.createElement('div');
+  banner.id = 'edit-banner';
+  banner.style.cssText = 'background:#1a2a3a;border:1px solid var(--blue);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--blue);display:flex;justify-content:space-between;align-items:center';
+  banner.innerHTML = `
+    <span>✏️ Editando turno del ${reg.fecha.split('-').reverse().join('/')}</span>
+    <button onclick="cancelarEdicion()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1">×</button>
+  `;
+  document.getElementById('tab-registro').insertBefore(banner, document.getElementById('tab-registro').firstChild);
+
+  // Ir a la pestaña de registro
+  switchTab('registro');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarEdicion() {
+  editandoId = null;
+  document.querySelector('.btn-save').innerHTML = '💾 Guardar Turno';
+  document.getElementById('edit-banner')?.remove();
+  buildEmpleadasList();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('reg-fecha').value = today;
+  selectTurno('am');
+}
+
+// ── DETALLE EMPLEADA ─────────────────────────────────────────────────────
+function mostrarDetalleEmpleada(emp, mes, registros) {
+  const precio = emp.encargada ? PRECIO_ENC : PRECIO_REST;
+  const fmtH = (min) => {
+    if (min === 0) return '0min';
+    const abs = Math.abs(min);
+    const h = Math.floor(abs/60), m = abs%60;
+    return `${h > 0 ? h+'h' : ''}${m > 0 ? m+'m' : ''}`;
+  };
+
+  // Calcular totales
+  let totalMinPos = 0, totalMinNeg = 0, totalConsumo = 0;
+  const turnos = [];
+  registros.forEach(reg => {
+    const d = reg.empleadas[emp.id];
+    if (!d) return;
+    if (d.totalMin > 0) totalMinPos += d.totalMin;
+    if (d.totalMin < 0) totalMinNeg += Math.abs(d.totalMin);
+    totalConsumo += d.consumoEur || 0;
+    if (d.totalMin !== 0 || d.consumoEur > 0 || d.consumoText) {
+      turnos.push({ reg, d });
+    }
+  });
+
+  // Ordenar por fecha asc + turno (mañana antes noche)
+  turnos.sort((a,b) => {
+    const cmp = a.reg.fecha.localeCompare(b.reg.fecha);
+    if (cmp !== 0) return cmp;
+    return a.reg.turno === 'am' ? -1 : 1;
+  });
+
+  const porHorasTotal = ((totalMinPos - totalMinNeg) / 60) * precio;
+  const acuerdo = (emp.id === 'mery' || emp.id === 'leo' || emp.id === 'debora') ? (ACUERDOS[emp.id] || 0) : 0;
+  const netoTotal = acuerdo + porHorasTotal - totalConsumo;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'detalle-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  const diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+  const turnosHTML = turnos.map(({reg, d}) => {
+    const [y, mo, dia] = reg.fecha.split('-');
+    const fechaObj = new Date(y, mo-1, dia);
+    const absMin = Math.abs(d.totalMin);
+    const h = Math.floor(absMin/60), m = absMin%60;
+    const sign = d.totalMin > 0 ? '+' : d.totalMin < 0 ? '−' : '';
+    const color = d.totalMin > 0 ? 'var(--green)' : d.totalMin < 0 ? 'var(--red)' : 'var(--muted)';
+    const horasStr = d.totalMin !== 0 ? `${sign}${h>0?h+'h':''}${m>0?m+'m':''}` : '—';
+    const turnoIcon = reg.turno === 'am' ? '☀️' : '🌙';
+    return `
+      <div class="detalle-turno-row">
+        <div>
+          <div style="font-weight:700;font-size:13px">${turnoIcon} ${diasSemana[fechaObj.getDay()]} ${dia}/${mo}</div>
+          <div class="detalle-turno-fecha">por ${reg.encargada}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:800;color:${color}">${horasStr}</div>
+          ${d.consumoEur > 0 ? `<div style="font-size:11px;color:var(--red)">−${d.consumoEur.toFixed(2)}€ ${d.consumoText}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div class="detalle-sheet">
+      <div class="detalle-header">
+        <div class="detalle-title">${emp.name}</div>
+        <button class="detalle-close" onclick="this.closest('.detalle-overlay').remove()">×</button>
+      </div>
+      <div class="detalle-stats">
+        <div class="detalle-stat">
+          <div class="detalle-stat-val" style="color:var(--green)">${fmtH(totalMinPos)}</div>
+          <div class="detalle-stat-lbl">Horas +</div>
+        </div>
+        <div class="detalle-stat">
+          <div class="detalle-stat-val" style="color:var(--red)">${fmtH(totalMinNeg)}</div>
+          <div class="detalle-stat-lbl">Horas −</div>
+        </div>
+        <div class="detalle-stat">
+          <div class="detalle-stat-val" style="color:var(--red)">${totalConsumo.toFixed(2)}€</div>
+          <div class="detalle-stat-lbl">Consumo</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center">
+        ${acuerdo ? `Acuerdo fijo ${acuerdo}€ · ` : ''}${precio}€/h · Neto: <strong style="color:var(--ember)">${netoTotal.toFixed(2)}€</strong>
+      </div>
+      <div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Turnos del mes</div>
+      ${turnosHTML || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Sin registros este mes</div>'}
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+// ── RESUMEN MENSUAL ───────────────────────────────────────────────────────
+async function renderResumen() {
+  const mes = document.getElementById('mes-selector').value;
+  if (!mes) return;
+  const arr = await loadRegistros();
+  // Deduplicar por id por si hubiera entradas duplicadas
+  const seen = new Set();
+  const delMes = arr.filter(r => {
+    if (!r.fecha.startsWith(mes)) return false;
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
+  const container = document.getElementById('resumen-content');
+
+  if (!delMes.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>Sin datos para este mes</div>';
+    return;
+  }
+
+  // Aggregate per empleada
+  const totales = {};
+  EMPLEADAS.forEach(emp => { totales[emp.id] = { minutos: 0, consumoEur: 0 }; });
+  delMes.forEach(reg => {
+    EMPLEADAS.forEach(emp => {
+      const d = reg.empleadas[emp.id];
+      if (d) {
+        totales[emp.id].minutos    += d.totalMin || 0;
+        totales[emp.id].consumoEur += d.consumoEur || 0;
+      }
+    });
+  });
+
+  container.innerHTML = '';
+  const [y,m] = mes.split('-');
+  const label = new Date(y, m-1).toLocaleString('es-ES', {month:'long',year:'numeric'});
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:12px;text-transform:capitalize';
+  title.textContent = label;
+  container.appendChild(title);
+
+  let totalAPagar = 0;
+  EMPLEADAS.forEach(emp => {
+    const t = totales[emp.id];
+    const precio = emp.encargada ? PRECIO_ENC : PRECIO_REST;
+    const horas = t.minutos / 60;
+    const acuerdo = ACUERDOS[emp.id] || 0;
+    // Horas positivas suman, negativas restan — siempre se calculan
+    const porHoras = horas * precio;
+    const descuento = t.consumoEur;
+    const neto = acuerdo + porHoras - descuento;
+    if (acuerdo === 0 && t.minutos === 0 && descuento === 0) return;
+
+    totalAPagar += neto;
+    const absMin = Math.abs(t.minutos);
+    const h = Math.floor(absMin / 60);
+    const mi = absMin % 60;
+    const signStr = t.minutos > 0 ? '+' : t.minutos < 0 ? '−' : '';
+    const horasStr = t.minutos !== 0 ? `${signStr}${h}h${mi > 0 ? mi+'m' : ''}` : '—';
+    const fmtEur = n => n.toFixed(2);
+
+    const cls = neto > 0 ? 'pos' : neto < 0 ? 'neg' : 'zero';
+    const porHorasStr = porHoras !== 0
+      ? `${porHoras > 0 ? '+' : ''}${fmtEur(porHoras)}€ por horas`
+      : '';
+
+    const row = document.createElement('div');
+    row.className = 'resumen-row' + (emp.encargada ? ' encargada' : '');
+    if (currentUser?.role === 'admin') {
+      row.style.cursor = 'pointer';
+      row.title = 'Ver detalle';
+      row.onclick = () => mostrarDetalleEmpleada(emp, mes, delMes);
+    }
+    row.innerHTML = `
+      <div>
+        <div class="resumen-name">${emp.name}${currentUser?.role==='admin' ? ' <span style="font-size:10px;color:var(--muted)">▶</span>' : ''}</div>
+        <div class="resumen-horas">${horasStr} · ${fmtEur(precio)}€/h</div>
+        ${acuerdo ? `<div class="resumen-acuerdo">Acuerdo fijo: ${acuerdo}€</div>` : ''}
+        ${porHoras < 0 ? `<div style="font-size:11px;color:var(--red)">Descuento horas: ${fmtEur(porHoras)}€</div>` : ''}
+        ${descuento ? `<div class="resumen-consumo">Consumo: −${fmtEur(descuento)}€</div>` : ''}
+      </div>
+      <div class="resumen-right">
+        <div class="resumen-total ${cls}">${fmtEur(neto)}€</div>
+        ${porHoras > 0 ? `<div style="font-size:11px;color:var(--muted)">${porHorasStr}</div>` : ''}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  // Total
+  const totalRow = document.createElement('div');
+  totalRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;';
+
+  totalRow.innerHTML = `
+    <div style="font-weight:700;font-size:15px">TOTAL A PAGAR</div>
+    <div style="font-weight:700;font-size:18px;color:var(--ember)">${totalAPagar.toFixed(2)}€</div>
+  `;
+  container.appendChild(totalRow);
+
+  // Turnos registrados info
+  const info = document.createElement('div');
+  info.style.cssText = 'font-size:11px;color:var(--muted);text-align:center;margin-top:10px';
+  info.textContent = `${delMes.length} turno${delMes.length!==1?'s':''} registrado${delMes.length!==1?'s':''}`;
+  container.appendChild(info);
+
+  // Botón exportar — solo admin
+  if (currentUser?.role === 'admin') {
+    const btnExport = document.createElement('button');
+    btnExport.style.cssText = `
+      width:100%;margin-top:14px;padding:13px;border-radius:12px;
+      background:var(--gold-bg);border:1.5px solid var(--gold-dim);
+      color:var(--gold);font-family:'Nunito',sans-serif;font-size:14px;
+      font-weight:800;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;gap:8px;transition:all .2s;
+    `;
+    btnExport.innerHTML = '📋 Copiar resumen para Excel';
+    btnExport.onclick = () => exportarResumen(mes, delMes);
+    container.appendChild(btnExport);
+
+    // Botón Excel detallado — solo admin
+    if (currentUser?.role === 'admin') {
+      const btnXlsx = document.createElement('button');
+      btnXlsx.style.cssText = `
+        width:100%;padding:13px;border-radius:var(--r);border:none;
+        background:#1d6f42;color:#fff;font-family:inherit;font-size:14px;
+        font-weight:700;cursor:pointer;margin-top:8px;
+        display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;
+      `;
+      btnXlsx.innerHTML = '📥 Descargar Excel detallado';
+      btnXlsx.onclick = () => exportarExcelDetallado(mes, delMes);
+      container.appendChild(btnXlsx);
+    }
+  }
+}
+
+// ── EXPORTAR RESUMEN ──────────────────────────────────────────────────────
+async function exportarResumen(mes, registros) {
+  const [y, m] = mes.split('-');
+  const label = new Date(y, m-1).toLocaleString('es-ES', {month:'long', year:'numeric'});
+
+  // Calcular totales por empleada
+  const totales = {};
+  EMPLEADAS.forEach(emp => { totales[emp.id] = { minPos: 0, minNeg: 0, consumoEur: 0 }; });
+  registros.forEach(reg => {
+    EMPLEADAS.forEach(emp => {
+      const d = reg.empleadas[emp.id];
+      if (!d) return;
+      if (d.totalMin > 0) totales[emp.id].minPos += d.totalMin;
+      if (d.totalMin < 0) totales[emp.id].minNeg += Math.abs(d.totalMin);
+      totales[emp.id].consumoEur += d.consumoEur || 0;
+    });
+  });
+
+  // Construir texto
+  let texto = `📊 RESUMEN HORAS EXTRAS — ${label.toUpperCase()}\n`;
+  texto += `${'─'.repeat(48)}\n`;
+  texto += `${'EMPLEADA'.padEnd(14)} ${'H+'.padStart(6)} ${'H-'.padStart(6)} ${'CONSUMO'.padStart(9)} ${'TOTAL'.padStart(10)}\n`;
+  texto += `${'─'.repeat(48)}\n`;
+
+  let grandTotal = 0;
+  EMPLEADAS.forEach(emp => {
+    const t = totales[emp.id];
+    const precio = emp.encargada ? PRECIO_ENC : PRECIO_REST;
+    const acuerdo = ACUERDOS[emp.id] || 0;
+    const hPos = t.minPos / 60;
+    const hNeg = t.minNeg / 60;
+    const porHoras = (hPos - hNeg) * precio;
+    const neto = acuerdo + porHoras - t.consumoEur;
+    if (acuerdo === 0 && t.minPos === 0 && t.minNeg === 0 && t.consumoEur === 0) return;
+
+    grandTotal += neto;
+    const fmtH = (min) => {
+      if (min === 0) return '—';
+      const abs = Math.abs(min);
+      const h = Math.floor(abs/60), m = abs%60;
+      return `${h}h${m>0?m+'m':''}`;
+    };
+    const consumoStr = t.consumoEur > 0 ? `-${t.consumoEur.toFixed(2)}€` : '—';
+    texto += `${emp.name.padEnd(14)} ${fmtH(t.minPos).padStart(6)} ${fmtH(t.minNeg).padStart(6)} ${consumoStr.padStart(9)} ${neto.toFixed(2).padStart(9)}€\n`;
+    if (acuerdo) texto += `${''.padEnd(14)} ${'Ac.fijo: '+acuerdo+'€'.padStart(8)}\n`;
+  });
+
+  texto += `${'─'.repeat(48)}\n`;
+  texto += `${'TOTAL A PAGAR'.padEnd(38)} ${grandTotal.toFixed(2).padStart(9)}€\n`;
+
+  // Copiar al portapapeles
+  try {
+    await navigator.clipboard.writeText(texto);
+    showToast('✓ Resumen copiado — pégalo en el chat con Claude');
+  } catch {
+    // Fallback: mostrar en alerta
+    prompt('Copia este resumen:', texto);
+  }
+}
+
+// ── EXPORTAR EXCEL DETALLADO ─────────────────────────────────────────────
+async function exportarExcelDetallado(mes, registros) {
+  const [y, m] = mes.split('-');
+  const mesLabel = new Date(parseInt(y), parseInt(m)-1)
+    .toLocaleString('es-ES', {month:'long', year:'numeric'});
+
+  const diasSemana = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  // ── Hoja 1: Detalle por turno ──────────────────────────────────────────
+  const detalleRows = [
+    ['FECHA','DÍA','TURNO','EMPLEADA','H+ (min)','H+ (horas)','H- (min)','H- (horas)','CONSUMO €','CONSUMO TEXTO','REGISTRADO POR']
+  ];
+
+  // Ordenar registros por fecha asc, turno am antes pm
+  const regsOrdenados = [...registros].sort((a,b) => {
+    const cmp = a.fecha.localeCompare(b.fecha);
+    if (cmp !== 0) return cmp;
+    return a.turno === 'am' ? -1 : 1;
+  });
+
+  regsOrdenados.forEach(reg => {
+    const [ry, rmo, rd] = reg.fecha.split('-').map(Number);
+    const fechaObj = new Date(ry, rmo-1, rd);
+    const diaSem = diasSemana[fechaObj.getDay()];
+    const fechaStr = `${String(rd).padStart(2,'0')}/${String(rmo).padStart(2,'0')}/${ry}`;
+    const turnoStr = reg.turno === 'am' ? 'Mañana' : 'Noche';
+
+    EMPLEADAS.forEach(emp => {
+      const d = reg.empleadas[emp.id];
+      if (!d || (d.totalMin === 0 && !d.consumoEur && !d.consumoText)) return;
+      const minPos = d.totalMin > 0 ? d.totalMin : 0;
+      const minNeg = d.totalMin < 0 ? Math.abs(d.totalMin) : 0;
+      detalleRows.push([
+        fechaStr,
+        diaSem,
+        turnoStr,
+        emp.name,
+        minPos,
+        minPos > 0 ? parseFloat((minPos/60).toFixed(4)) : 0,
+        minNeg,
+        minNeg > 0 ? parseFloat((minNeg/60).toFixed(4)) : 0,
+        d.consumoEur || 0,
+        d.consumoText || '',
+        reg.encargada
+      ]);
+    });
+  });
+
+  // ── Hoja 2: Resumen por empleada ──────────────────────────────────────
+  const resumenRows = [
+    ['EMPLEADA','H+ TOTAL (min)','H+ TOTAL','H- TOTAL (min)','H- TOTAL','CONSUMO €','PRECIO/H','ACUERDO FIJO','POR HORAS','NETO €']
+  ];
+
+  const totales = {};
+  EMPLEADAS.forEach(emp => { totales[emp.id] = { minPos:0, minNeg:0, consumoEur:0 }; });
+  registros.forEach(reg => {
+    EMPLEADAS.forEach(emp => {
+      const d = reg.empleadas[emp.id];
+      if (!d) return;
+      if (d.totalMin > 0) totales[emp.id].minPos += d.totalMin;
+      if (d.totalMin < 0) totales[emp.id].minNeg += Math.abs(d.totalMin);
+      totales[emp.id].consumoEur += d.consumoEur || 0;
+    });
+  });
+
+  let grandTotal = 0;
+  EMPLEADAS.forEach(emp => {
+    const t = totales[emp.id];
+    const precio = emp.encargada ? PRECIO_ENC : PRECIO_REST;
+    const acuerdo = ACUERDOS[emp.id] || 0;
+    if (acuerdo === 0 && t.minPos === 0 && t.minNeg === 0 && t.consumoEur === 0) return;
+    const porHoras = parseFloat((((t.minPos - t.minNeg) / 60) * precio).toFixed(2));
+    const neto = parseFloat((acuerdo + porHoras - t.consumoEur).toFixed(2));
+    grandTotal += neto;
+    resumenRows.push([
+      emp.name,
+      t.minPos,
+      parseFloat((t.minPos/60).toFixed(4)),
+      t.minNeg,
+      parseFloat((t.minNeg/60).toFixed(4)),
+      t.consumoEur,
+      precio,
+      acuerdo,
+      porHoras,
+      neto
+    ]);
+  });
+  resumenRows.push(['', '', '', '', '', '', '', 'TOTAL A PAGAR', '', parseFloat(grandTotal.toFixed(2))]);
+
+  // ── Construir workbook ─────────────────────────────────────────────────
+  const wb = XLSX.utils.book_new();
+
+  // Hoja detalle
+  const wsDetalle = XLSX.utils.aoa_to_sheet(detalleRows);
+  wsDetalle['!cols'] = [
+    {wch:12},{wch:12},{wch:9},{wch:14},{wch:10},{wch:11},{wch:10},{wch:11},{wch:10},{wch:24},{wch:14}
+  ];
+  XLSX.utils.book_append_sheet(wb, wsDetalle, 'Detalle turnos');
+
+  // Hoja resumen
+  const wsResumen = XLSX.utils.aoa_to_sheet(resumenRows);
+  wsResumen['!cols'] = [
+    {wch:14},{wch:14},{wch:11},{wch:14},{wch:11},{wch:10},{wch:9},{wch:13},{wch:11},{wch:10}
+  ];
+  XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen mensual');
+
+  // Descargar
+  const nombreMes = mesLabel.replace(/ /g,'_').replace(/[áàä]/g,'a').replace(/[éèë]/g,'e')
+    .replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u');
+  XLSX.writeFile(wb, `LaChimenea_Horas_${nombreMes}.xlsx`);
+  showToast('✓ Excel descargado');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['registro','historial','resumen'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'historial') { _cargado = false; renderHistorial(); }
+  if (name === 'resumen')   { _cargado = false; renderResumen(); }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT DATE ─────────────────────────────────────────────────────────────
+document.getElementById('mes-selector').addEventListener('change', renderResumen);
+document.getElementById('reg-fecha').addEventListener('change', refreshXChecks);
+
+// Set today on load
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('reg-fecha').value = today;
+</script>
+</body>
+</html>
